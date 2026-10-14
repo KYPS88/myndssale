@@ -7,7 +7,8 @@ export function Footer() {
     <footer className="mt-20 border-t border-line bg-soft">
       <div className="container-x grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
-          <div className="text-xl font-bold tracking-[0.2em]">MYNDS</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-tagline.png" alt="Mynds — Made for everyday" width={502} height={192} className="h-14 w-auto" />
           <p className="text-sm text-muted">{site.positioning}</p>
           <a href={site.contact.lineUrl} target="_blank" rel="noopener" className="btn inline-flex bg-[#06c755] text-white hover:opacity-90">
             <LineIcon /> LINE {site.contact.lineId}

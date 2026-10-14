@@ -6,9 +6,10 @@
   --color-muted: #5b6b78;
   --color-line: #e3e9ee;
   --color-soft: #f3f6f8;
-  --color-ice: #1f6fa5;
-  --color-ice-dark: #175a87;
-  --color-ice-light: #e6f1f8;
+  --color-ice: #1f62af; /* สีน้ำเงินจากโลโก้ */
+  --color-ice-dark: #174b87;
+  --color-ice-light: #e8f0fa;
+  --color-sky: #64cdf5; /* สีฟ้าจาก tagline "Made for everyday" */
   --color-sale: #c2410c;
 }
 

@@ -13,11 +13,14 @@ export const metadata: Metadata = {
   title: { default: `${site.name} — ${site.tagline} | เสื้อผ้าใส่สบาย ไม่ร้อน`, template: `%s | ${site.name}` },
   description:
     "Mynds (มายด์) แบรนด์เสื้อผ้าสำหรับอากาศร้อน ผ้า Ultra Cool เย็นตั้งแต่ครั้งแรกที่สัมผัส เสื้อยืด เสื้อโปโล แขนยาว ผู้ชาย ผู้หญิง เด็ก ไซซ์ XS–6XL",
-  icons: { icon: "/favicon.svg" },
-  openGraph: { siteName: site.name, locale: "th_TH", type: "website" },
+  icons: {
+    icon: [{ url: "/brand/icon-32.png", sizes: "32x32" }, { url: "/brand/icon-512.png", sizes: "512x512" }],
+    apple: "/brand/icon-180.png",
+  },
+  openGraph: { siteName: site.name, locale: "th_TH", type: "website", images: ["/brand/og.png"] },
 };
 
-export const viewport: Viewport = { themeColor: "#0e1a24", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#1f62af", width: "device-width", initialScale: 1 };
 
 export const dynamic = "force-dynamic";
 

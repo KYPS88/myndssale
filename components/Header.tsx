@@ -93,14 +93,15 @@ export function Header({ announcement }: { announcement?: string }) {
     <>
     <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
       {announcement && (
-        <div className="bg-ink px-4 py-1.5 text-center text-xs text-white">{announcement}</div>
+        <div className="bg-ice px-4 py-1.5 text-center text-xs text-white">{announcement}</div>
       )}
       <div className="container-x flex h-16 items-center gap-4">
         <button className="-ml-1 p-1 lg:hidden" onClick={() => setMenuOpen(true)} aria-label="เปิดเมนู">
           <MenuIcon />
         </button>
-        <Link href="/" className="text-2xl font-bold tracking-[0.2em]" aria-label="Mynds หน้าแรก">
-          MYNDS
+        <Link href="/" className="shrink-0" aria-label="Mynds หน้าแรก">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo.png" alt="Mynds มายด์" width={1200} height={466} className="h-10 w-auto sm:h-11" />
         </Link>
         <nav className="ml-6 hidden gap-5 text-sm lg:flex" aria-label="เมนูหลัก">
           {NAV.map((n) => (
@@ -140,7 +141,8 @@ export function Header({ announcement }: { announcement?: string }) {
           <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
           <div className="absolute inset-y-0 left-0 w-80 max-w-[85%] overflow-y-auto bg-white p-5">
             <div className="mb-6 flex items-center justify-between">
-              <span className="text-xl font-bold tracking-[0.2em]">MYNDS</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/logo.png" alt="Mynds มายด์" width={1200} height={466} className="h-9 w-auto" />
               <button onClick={() => setMenuOpen(false)} aria-label="ปิดเมนู"><CloseIcon /></button>
             </div>
             <nav className="flex flex-col divide-y divide-line" aria-label="เมนูมือถือ">
