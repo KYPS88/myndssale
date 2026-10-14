@@ -3,6 +3,8 @@
 เว็บ e-commerce ของแบรนด์ **Mynds (มายด์)** — *Hot Weather Apparel* สร้างตาม requirement ในชีต
 **“Website Brief - Mynds”** ใช้ Next.js 16 + SQLite (ไม่ต้องมี database server แยก) พร้อมระบบหลังบ้าน
 
+> ส่งมอบงาน / รับช่วงดูแลต่อ: อ่าน [`HANDOVER.md`](HANDOVER.md) · ใช้ Claude Code: ดู [`CLAUDE.md`](CLAUDE.md)
+
 ## เริ่มใช้งาน
 
 ต้องใช้ Node.js **22.13 ขึ้นไป** (ใช้ `node:sqlite` ที่มากับ Node)
