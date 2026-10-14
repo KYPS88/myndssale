@@ -88,7 +88,9 @@ export function Header({ announcement }: { announcement?: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // เมนูมือถืออยู่นอก <header>: backdrop-blur ทำให้ element `fixed` ข้างในถูกจำกัดแค่ขนาดของ header
   return (
+    <>
     <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
       {announcement && (
         <div className="bg-ink px-4 py-1.5 text-center text-xs text-white">{announcement}</div>
@@ -132,6 +134,7 @@ export function Header({ announcement }: { announcement?: string }) {
           <SearchBox autoFocus onDone={() => setSearchOpen(false)} />
         </div>
       )}
+    </header>
       {menuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
@@ -152,6 +155,6 @@ export function Header({ announcement }: { announcement?: string }) {
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }
