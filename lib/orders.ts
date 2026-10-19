@@ -258,7 +258,10 @@ export function lookupOrder(orderNo: string, phone: string): Order | null {
   return o;
 }
 
-export function listOrders(opts: { q?: string; status?: string; limit?: number; offset?: number } = {}, db = getDb()) {
+export type OrderFilter = { q?: string; status?: string; from?: string; to?: string };
+
+/** วันที่ from/to เป็นรูปแบบ YYYY-MM-DD ตามเวลาไทย (ทั้งสองวันนับรวม) */
+function orderWhere(opts: OrderFilter) {
   const where: string[] = [];
   const args: (string | number)[] = [];
   if (opts.status) {
@@ -270,12 +273,33 @@ export function listOrders(opts: { q?: string; status?: string; limit?: number; 
     const like = `%${opts.q.trim()}%`;
     args.push(like, like, like, like);
   }
-  const w = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const ymd = /^\d{4}-\d{2}-\d{2}$/;
+  if (opts.from && ymd.test(opts.from)) {
+    where.push("date(created_at, '+7 hours') >= ?");
+    args.push(opts.from);
+  }
+  if (opts.to && ymd.test(opts.to)) {
+    where.push("date(created_at, '+7 hours') <= ?");
+    args.push(opts.to);
+  }
+  return { w: where.length ? `WHERE ${where.join(" AND ")}` : "", args };
+}
+
+export function listOrders(opts: OrderFilter & { limit?: number; offset?: number } = {}, db = getDb()) {
+  const { w, args } = orderWhere(opts);
   const total = (db.prepare(`SELECT COUNT(*) AS n FROM orders ${w}`).get(...args) as { n: number }).n;
   const rows = db
     .prepare(`SELECT * FROM orders ${w} ORDER BY id DESC LIMIT ? OFFSET ?`)
     .all(...args, opts.limit ?? 50, opts.offset ?? 0) as Omit<Order, "items" | "events">[];
   return { total, rows };
+}
+
+/** ออเดอร์ทั้งหมดที่ตรงเงื่อนไข พร้อมรายการสินค้า (ใช้ export) — เรียงเก่า → ใหม่ */
+export function ordersForExport(opts: OrderFilter = {}, db = getDb()): Omit<Order, "events">[] {
+  const { w, args } = orderWhere(opts);
+  const rows = db.prepare(`SELECT * FROM orders ${w} ORDER BY id`).all(...args) as Omit<Order, "items" | "events">[];
+  const itemStmt = db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY id");
+  return rows.map((o) => ({ ...o, items: itemStmt.all(o.id) as Order["items"] }));
 }
 
 export function updateOrder(
