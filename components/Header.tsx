@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "./CartProvider";
 import { BagIcon, CloseIcon, HeartIcon, MenuIcon, SearchIcon } from "./icons";
-import { NAV } from "./nav";
+import { NAV, NAV_BRAND } from "./nav";
 import { track } from "./analytics";
 import { Img } from "@/components/Img";
 
@@ -103,18 +103,24 @@ export function Header({ announcement }: { announcement?: string }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo.png" alt="Mynds มายด์" width={1200} height={466} className="h-10 w-auto sm:h-11" />
         </Link>
-        <nav className="ml-6 hidden gap-5 text-sm lg:flex" aria-label="เมนูหลัก">
+        <nav className="ml-6 hidden items-center gap-4 whitespace-nowrap text-sm lg:flex xl:gap-5" aria-label="เมนูหลัก">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className={n.accent ? "font-semibold text-sale" : "hover:text-ice"}>
               {n.label}
             </Link>
           ))}
+          <span className="h-4 w-px bg-line" aria-hidden />
+          {NAV_BRAND.map((n) => (
+            <Link key={n.href} href={n.href} className="text-ice-dark hover:text-ice">
+              {n.label}
+            </Link>
+          ))}
         </nav>
-        <div className="ml-auto hidden w-64 md:block xl:w-72">
+        <div className="ml-auto hidden w-56 xl:block 2xl:w-72">
           <SearchBox />
         </div>
-        <div className="ml-auto flex items-center gap-1 md:ml-2">
-          <button className="p-2 md:hidden" onClick={() => setSearchOpen((v) => !v)} aria-label="ค้นหา">
+        <div className="ml-auto flex items-center gap-1 xl:ml-2">
+          <button className="p-2 xl:hidden" onClick={() => setSearchOpen((v) => !v)} aria-label="ค้นหา">
             <SearchIcon />
           </button>
           <Link href="/wishlist" className="p-2" aria-label="สินค้าที่ชอบ">
@@ -131,7 +137,7 @@ export function Header({ announcement }: { announcement?: string }) {
         </div>
       </div>
       {searchOpen && (
-        <div className="container-x pb-3 md:hidden">
+        <div className="container-x pb-3 xl:hidden">
           <SearchBox autoFocus onDone={() => setSearchOpen(false)} />
         </div>
       )}
@@ -151,6 +157,17 @@ export function Header({ announcement }: { announcement?: string }) {
                   {n.label}
                 </Link>
               ))}
+            </nav>
+            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted">เกี่ยวกับ Mynds</p>
+            <nav className="flex flex-col divide-y divide-line" aria-label="เมนูแบรนด์">
+              {NAV_BRAND.map((n) => (
+                <Link key={n.href} href={n.href} onClick={() => setMenuOpen(false)} className="py-3">
+                  {n.label}
+                </Link>
+              ))}
+            </nav>
+            <p className="mt-6 text-xs font-semibold uppercase tracking-widest text-muted">ช่วยเหลือ</p>
+            <nav className="flex flex-col divide-y divide-line" aria-label="เมนูช่วยเหลือ">
               <Link href="/track" onClick={() => setMenuOpen(false)} className="py-3">ติดตามคำสั่งซื้อ</Link>
               <Link href="/faq" onClick={() => setMenuOpen(false)} className="py-3">คำถามที่พบบ่อย / ติดต่อเรา</Link>
             </nav>
