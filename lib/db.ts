@@ -2,6 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parseProductMaster, type ImportedProduct } from "./catalog.ts";
+import { seedArticles } from "./articles.ts";
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS products (
@@ -112,6 +113,18 @@ CREATE TABLE IF NOT EXISTS restock_requests (
   notified INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS articles (
+  id INTEGER PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  excerpt TEXT,
+  cover_image TEXT,
+  body TEXT NOT NULL DEFAULT '',
+  published INTEGER NOT NULL DEFAULT 0,
+  published_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
@@ -130,6 +143,8 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   card_enabled: "0",
   shipping_note: "จัดส่งทั่วประเทศไทย 1–3 วันทำการ (ต่างจังหวัดห่างไกล 3–5 วัน) ตัดรอบส่งทุกวัน 14:00 น.",
   announcement: "ส่งฟรีเมื่อช้อปครบ ฿990 · เปลี่ยนไซซ์ได้ภายใน 7 วัน",
+  // ประวัติแบรนด์ (หน้า /about) — แก้ได้ในหลังบ้าน › ตั้งค่าร้าน; เว้นว่างจะใช้ข้อความตั้งต้น
+  brand_story: "",
 };
 
 export type DB = DatabaseSync;
@@ -159,6 +174,7 @@ export function getDb(): DatabaseSync {
   if (n === 0 && existsSync(csv)) {
     importProducts(db, parseProductMaster(readFileSync(csv, "utf8")));
   }
+  seedArticles(db);
   instance = db;
   return db;
 }

@@ -30,6 +30,11 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="card_enabled" defaultChecked={s.card_enabled === "1"} /> เปิดรับบัตรเครดิต (ทีมงานส่งลิงก์ชำระให้ลูกค้า จนกว่าจะเชื่อม payment gateway)</label>
         </div>
       </div>
+      <div className="card space-y-2 p-6">
+        <h2 className="font-semibold">ประวัติแบรนด์ (หน้า “ประวัติแบรนด์”)</h2>
+        <p className="text-xs text-muted">เว้นบรรทัด = ย่อหน้าใหม่ · ขึ้นต้นบรรทัดด้วย “## ” = หัวข้อ · “- ” = รายการ · เว้นว่างทั้งช่องจะใช้ข้อความตั้งต้น</p>
+        <textarea name="brand_story" defaultValue={s.brand_story} rows={12} className="input font-sans leading-7" placeholder="Mynds เริ่มต้นจาก..." />
+      </div>
     </form>
   );
 }

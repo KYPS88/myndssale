@@ -6,6 +6,7 @@ import { checkPassword, endSession, isAdmin, startSession } from "@/lib/auth";
 import { getDb, importProducts, transaction } from "@/lib/db";
 import { parseProductMaster } from "@/lib/catalog";
 import { updateOrder, type OrderStatus } from "@/lib/orders";
+import { deleteArticle as removeArticle, saveArticle as storeArticle } from "@/lib/articles";
 
 async function guard() {
   if (!(await isAdmin())) redirect("/admin/login");
@@ -109,7 +110,7 @@ export async function deleteCoupon(formData: FormData) {
   redirect("/admin/coupons");
 }
 
-const SETTING_KEYS = ["shipping_flat", "free_shipping_min", "cod_enabled", "cod_fee", "card_enabled", "bank_name", "bank_account_name", "bank_account_no", "promptpay_id", "shipping_note", "announcement"];
+const SETTING_KEYS = ["shipping_flat", "free_shipping_min", "cod_enabled", "cod_fee", "card_enabled", "bank_name", "bank_account_name", "bank_account_no", "promptpay_id", "shipping_note", "announcement", "brand_story"];
 
 export async function saveSettings(formData: FormData) {
   await guard();
@@ -137,4 +138,32 @@ export async function importCsv(formData: FormData) {
   }
   revalidatePath("/", "layout");
   redirect("/admin/import?ok=" + encodeURIComponent(msg));
+}
+
+export async function saveArticle(formData: FormData) {
+  await guard();
+  const id = Number(formData.get("id")) || undefined;
+  let saved;
+  try {
+    saved = storeArticle({
+      id,
+      title: String(formData.get("title") ?? ""),
+      slug: String(formData.get("slug") ?? ""),
+      excerpt: String(formData.get("excerpt") ?? ""),
+      coverImage: String(formData.get("cover_image") ?? ""),
+      body: String(formData.get("body") ?? ""),
+      published: formData.get("published") === "1",
+    });
+  } catch (e) {
+    redirect(`/admin/articles/${id ?? "new"}?error=` + encodeURIComponent(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ"));
+  }
+  revalidatePath("/blog");
+  redirect(`/admin/articles/${saved.id}?saved=1`);
+}
+
+export async function deleteArticle(formData: FormData) {
+  await guard();
+  removeArticle(Number(formData.get("id")));
+  revalidatePath("/blog");
+  redirect("/admin/articles");
 }

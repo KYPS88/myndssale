@@ -36,7 +36,8 @@ export function Footer() {
         <div>
           <h3 className="mb-3 font-semibold">เกี่ยวกับเรา</h3>
           <ul className="space-y-2 text-sm text-muted">
-            <li><Link href="/about">เรื่องราวของ Mynds</Link></li>
+            <li><Link href="/about">ประวัติแบรนด์</Link></li>
+            <li><Link href="/blog">บทความ</Link></li>
             <li><Link href="/policies/terms">ข้อกำหนดและเงื่อนไข</Link></li>
             <li><Link href="/policies/privacy">นโยบายความเป็นส่วนตัว</Link></li>
             <li><Link href="/policies/cookies">นโยบายคุกกี้</Link></li>

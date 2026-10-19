@@ -10,3 +10,9 @@ export const NAV = [
   { href: "/products?sort=popular", label: "ขายดี" },
   { href: "/products?sale=1", label: "Sale", accent: true },
 ];
+
+// เมนูเนื้อหาแบรนด์ แยกจากเมนูสินค้า
+export const NAV_BRAND = [
+  { href: "/about", label: "ประวัติแบรนด์" },
+  { href: "/blog", label: "บทความ" },
+];

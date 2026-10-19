@@ -27,6 +27,7 @@ Run `npm run lint && npm test && npx next build` before pushing.
 - `lib/products.ts`: listing, filters, facets, search and related products. Filtering runs in memory, which is fine for ~60 products.
 - `lib/pricing.ts`: pure totals, shipping and coupon logic, shared by the cart preview (`/api/cart`) and order creation.
 - `lib/orders.ts`: validation, `createOrder` (one transaction that decrements stock with a guard and recomputes prices server-side) and status changes (cancelled/refunded restocks automatically).
+- `lib/articles.ts`: blog articles stored in the DB (admin CRUD at `/admin/articles`, public `/blog`). Bodies are plain text (`## ` headings, `- ` lists) rendered by `components/RichText.tsx`, never as raw HTML. The brand story (`/about`) is the `brand_story` setting, rendered the same way. Three starter articles are seeded once, guarded by the `articles_seeded` setting.
 - `lib/site.ts`: brand and company info and contact (LINE @693ppazy). `lib/policies.ts` holds the policy texts, which are **drafts pending legal review**.
 - `components/`: client UI. `CartProvider` keeps the cart in localStorage. Analytics in `analytics.ts`/`Tracking.tsx` fire GA4 and Meta Pixel only after cookie consent.
 - `public/brand/`: logos (the blue logo is the CI colour #1F62AF), favicon and OG image.

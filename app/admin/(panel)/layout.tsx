@@ -8,6 +8,7 @@ const NAV = [
   { href: "/admin/orders", label: "คำสั่งซื้อ" },
   { href: "/admin/products", label: "สินค้า / สต็อก" },
   { href: "/admin/coupons", label: "คูปอง" },
+  { href: "/admin/articles", label: "บทความ" },
   { href: "/admin/import", label: "นำเข้าสินค้า" },
   { href: "/admin/settings", label: "ตั้งค่าร้าน" },
 ];
