@@ -7,6 +7,7 @@ import { useCart } from "./CartProvider";
 import { QtyStepper } from "./QtyStepper";
 import { WishlistButton } from "./Wishlist";
 import { track } from "./analytics";
+import { SOLD_OUT_IMG, SoldOutOverlay } from "./SoldOut";
 import { Img } from "@/components/Img";
 
 type V = { id: number; sku: string; color: string; size: string; price: number; compare_at: number | null; stock: number; image: string | null };
@@ -32,6 +33,7 @@ export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
   const variant = size ? forColor.find((v) => v.size === size) ?? null : null;
   const display = variant ?? forColor.find((v) => v.stock > 0) ?? forColor[0];
   const colorImage = forColor.find((v) => v.image)?.image ?? null;
+  const colorSoldOut = forColor.every((v) => v.stock <= 0);
 
   // รูปหลักเปลี่ยนตามสีที่เลือก ตามด้วยรูปเสริมของสินค้า
   const gallery = useMemo(() => {
@@ -64,7 +66,8 @@ export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
     <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
       <div className="min-w-0 md:sticky md:top-24 md:self-start">
         <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-soft">
-          <Img src={main} alt={`${p.name} สี ${color}`} className="h-full w-full object-cover" />
+          <Img src={main} alt={`${p.name} สี ${color}`} className={`h-full w-full object-cover transition ${colorSoldOut ? SOLD_OUT_IMG : ""}`} />
+          {colorSoldOut && <SoldOutOverlay large />}
           <WishlistButton slug={p.slug} className="absolute right-3 top-3" />
         </div>
         {gallery.length > 1 && (
@@ -128,16 +131,19 @@ export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
               );
             })}
           </div>
-          {variant && variant.stock > 0 && variant.stock <= LOW_STOCK && (
-            <p className="mt-2 text-sm text-sale">เหลือเพียง {variant.stock} ชิ้น</p>
+          {variant && variant.stock > 0 && (
+            <p className={`mt-2 text-sm ${variant.stock <= LOW_STOCK ? "font-medium text-sale" : "text-muted"}`}>
+              {variant.stock <= LOW_STOCK ? `เหลือเพียง ${variant.stock} ชิ้น` : `มีสินค้า ${variant.stock.toLocaleString("th-TH")} ชิ้น`}
+            </p>
           )}
+          {colorSoldOut && <p className="mt-2 text-sm text-muted">สี {color} หมดสต็อกทุกไซซ์ — รอสินค้าเข้าเร็ว ๆ นี้ หรือเลือกสีอื่น</p>}
           {error && <p className="mt-2 text-sm text-sale" role="alert">{error}</p>}
         </div>
 
         <div className="flex items-center gap-3">
           <QtyStepper value={qty} max={variant?.stock ?? 1} onChange={setQty} />
-          <button className="btn-primary flex-1 py-3 text-base" onClick={onAdd} disabled={!!variant && variant.stock <= 0}>
-            เพิ่มลงตะกร้า
+          <button className="btn-primary flex-1 py-3 text-base" onClick={onAdd} disabled={colorSoldOut || (!!variant && variant.stock <= 0)}>
+            {colorSoldOut ? "สินค้าหมดสต็อก" : "เพิ่มลงตะกร้า"}
           </button>
         </div>
 
