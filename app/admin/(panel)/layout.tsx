@@ -7,6 +7,7 @@ const NAV = [
   { href: "/admin", label: "ภาพรวม" },
   { href: "/admin/orders", label: "คำสั่งซื้อ" },
   { href: "/admin/products", label: "สินค้า / สต็อก" },
+  { href: "/admin/stock-sync", label: "ซิงก์สต็อก JST" },
   { href: "/admin/coupons", label: "คูปอง" },
   { href: "/admin/articles", label: "บทความ" },
   { href: "/admin/import", label: "นำเข้าสินค้า" },
