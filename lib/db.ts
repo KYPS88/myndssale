@@ -125,6 +125,18 @@ CREATE TABLE IF NOT EXISTS articles (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS stock_sync_log (
+  id INTEGER PRIMARY KEY,
+  source TEXT NOT NULL,
+  trigger TEXT NOT NULL,
+  started_at TEXT NOT NULL DEFAULT (datetime('now')),
+  finished_at TEXT,
+  ok INTEGER NOT NULL DEFAULT 0,
+  checked INTEGER NOT NULL DEFAULT 0,
+  updated INTEGER NOT NULL DEFAULT 0,
+  missing TEXT,
+  error TEXT
+);
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
