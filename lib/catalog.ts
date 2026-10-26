@@ -149,6 +149,28 @@ function slugify(sku: string): string {
   return sku.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+/** ชีตพิมพ์ "เ" สองตัวแทน "แ" (เช่น คาร์ดิเเกน) — ดูเหมือนกันแต่ค้นหา/กรองไม่ตรงกัน */
+export function fixThai(s: string): string {
+  return s.replace(/\u0e40\u0e40/g, "\u0e41");
+}
+
+/** รวมชื่อคอลเลกชันที่ต่างกันแค่ตัวพิมพ์/ช่องว่าง (Ultracool / UltraCool) ให้ใช้ตัวสะกดที่ใช้บ่อยที่สุด */
+function unifyCollections(products: ImportedProduct[]): void {
+  const key = (s: string) => s.toLowerCase().replace(/\s+/g, "");
+  const counts = new Map<string, Map<string, number>>();
+  for (const p of products) {
+    if (!p.collection) continue;
+    const m = counts.get(key(p.collection)) ?? new Map<string, number>();
+    m.set(p.collection, (m.get(p.collection) ?? 0) + 1);
+    counts.set(key(p.collection), m);
+  }
+  for (const p of products) {
+    if (!p.collection) continue;
+    const m = counts.get(key(p.collection))!;
+    p.collection = [...m.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  }
+}
+
 export function parseProductMaster(csvText: string): ImportedProduct[] {
   const rows = parseCsv(csvText);
   if (!rows.length) return [];
@@ -160,7 +182,7 @@ export function parseProductMaster(csvText: string): ImportedProduct[] {
   if (idx.sku < 0 || idx.variantSku < 0) {
     throw new Error("CSV ไม่ใช่รูปแบบชีต 03_Product_Master (ไม่พบคอลัมน์ SKU หลัก / รหัส Variant SKU)");
   }
-  const get = (r: string[], k: keyof typeof HEADERS) => (idx[k] >= 0 ? r[idx[k]] ?? "" : "");
+  const get = (r: string[], k: keyof typeof HEADERS) => (idx[k] >= 0 ? fixThai(r[idx[k]] ?? "") : "");
 
   const groups = new Map<string, string[][]>();
   for (const r of rows.slice(1)) {
@@ -254,5 +276,6 @@ export function parseProductMaster(csvText: string): ImportedProduct[] {
       p.name = `${p.name} (${unique ? tails[i] : p.sku})`;
     });
   }
+  unifyCollections(products);
   return products;
 }

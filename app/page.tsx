@@ -3,6 +3,7 @@ import { getAllProducts, sellable, toCard } from "@/lib/products";
 import { site } from "@/lib/site";
 import { ProductCard } from "@/components/ProductCard";
 import { Img } from "@/components/Img";
+import { CATEGORY_TILES, COLLAB_COLLECTIONS, HERO_COLLECTION, productsHref } from "@/components/nav";
 
 function Section({ title, href, children }: { title: string; href?: string; children: React.ReactNode }) {
   return (
@@ -16,29 +17,17 @@ function Section({ title, href, children }: { title: string; href?: string; chil
   );
 }
 
-const CATEGORY_TILES = [
-  { label: "เสื้อยืด", href: "/products?category=เสื้อยืด" },
-  { label: "เสื้อโปโล", href: "/products?category=เสื้อโปโล" },
-  { label: "แขนยาว / กันแดด", href: "/products?category=เสื้อแขนยาว" },
-  { label: "ผู้หญิง", href: "/products?gender=WOMEN" },
-  { label: "เด็ก", href: "/products?gender=KIDS" },
-  { label: "คอลแลบ", href: "/products?collection=Collaboration" },
-];
 
 export default function Home() {
   const products = getAllProducts().filter((p) => sellable(p).length);
   const cards = products.map(toCard).filter((c) => c.inStock);
   const best = [...cards].sort((a, b) => b.featured - a.featured || b.sold - a.sold || b.colors.length - a.colors.length).slice(0, 8);
   const sale = [...cards].sort((a, b) => b.discountPct - a.discountPct).slice(0, 4);
-  const collab = cards.filter((c) => c.collection === "Collaboration").slice(0, 4);
+  const collab = cards.filter((c) => COLLAB_COLLECTIONS.includes(c.collection ?? "")).slice(0, 4);
   const tileImage = (href: string) => {
     const q = new URLSearchParams(href.split("?")[1]);
-    const c = cards.find(
-      (x) =>
-        (!q.get("category") || x.category === q.get("category")) &&
-        (!q.get("gender") || x.gender === q.get("gender")) &&
-        (!q.get("collection") || x.collection === q.get("collection")),
-    );
+    const ok = (key: string, v: string | null) => !q.get(key) || q.get(key)!.split(",").includes(v ?? "");
+    const c = cards.find((x) => ok("category", x.category) && ok("gender", x.gender) && ok("collection", x.collection));
     return c?.image ?? "/placeholder.svg";
   };
 
@@ -57,7 +46,7 @@ export default function Home() {
             <p className="max-w-md text-lg text-muted">{site.positioning} — ออกแบบมาเพื่ออากาศร้อนของเมืองไทยโดยเฉพาะ</p>
             <div className="flex flex-wrap gap-3">
               <Link href="/products" className="btn-primary px-7 py-3">ช้อปเลย</Link>
-              <Link href="/products?collection=Ultra%20Cool" className="btn-outline px-7 py-3">คอลเลกชัน Ultra Cool</Link>
+              <Link href={productsHref("collection", [HERO_COLLECTION])} className="btn-outline px-7 py-3">คอลเลกชัน Ultracool</Link>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -105,7 +94,7 @@ export default function Home() {
       )}
 
       {collab.length > 0 && (
-        <Section title="Mynds × Collaboration" href="/products?collection=Collaboration">
+        <Section title="Mynds × Collaboration" href={productsHref("collection", COLLAB_COLLECTIONS, "คอลแลบ")}>
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4">
             {collab.map((p) => <ProductCard key={p.slug} p={p} />)}
           </div>

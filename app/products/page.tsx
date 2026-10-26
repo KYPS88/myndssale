@@ -8,6 +8,7 @@ import { Filters } from "@/components/Filters";
 function heading(q: ReturnType<typeof parseListQuery>): string {
   if (q.q) return `ผลการค้นหา “${q.q}”`;
   if (q.sale) return "Sale";
+  if (q.title) return q.title;
   if (q.category?.length === 1) return q.category[0];
   if (q.gender?.length === 1) return `สินค้า${GENDER_LABEL[q.gender[0]] ?? ""}`;
   if (q.collection?.length === 1) return q.collection[0];
