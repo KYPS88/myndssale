@@ -22,7 +22,7 @@ npm run dev                 # http://localhost:3000  · หลังบ้าน
 | --- | --- |
 | `npm run dev` | เปิดโหมดพัฒนา |
 | `npm run build && npm start` | build และรัน production |
-| `npm test` | unit test (ราคา/คูปอง/ค่าส่ง, แปลงข้อมูลสินค้า, สร้างออเดอร์/ตัดสต็อก) |
+| `npm test` | unit test (ราคา/คูปอง/ค่าส่ง, แปลงข้อมูลสินค้า, สร้างออเดอร์/ตัดสต็อก, อ่านไฟล์สต็อก JST) |
 | `npm run lint` | type-check |
 | `npm run import:products -- file.csv` | นำเข้า/อัปเดตสินค้าจาก CSV (หรืออัปโหลดในหลังบ้าน → นำเข้าสินค้า) |
 
@@ -46,7 +46,7 @@ npm run dev                 # http://localhost:3000  · หลังบ้าน
 | ติดตามคำสั่งซื้อ | ค้นด้วยเลขออเดอร์ + เบอร์โทร, ลิงก์สถานะมี token กันคนอื่นเดา |
 | SEO (ชีต 07) | title/description ต่อหน้า, canonical, `sitemap.xml`, `robots.txt`, JSON-LD Product, URL อ่านง่าย `/products/atl-bs` |
 | Tracking (ชีต 05/07) | GA4 + Meta Pixel โหลด**หลังลูกค้ายอมรับคุกกี้เท่านั้น** · event `view_item`, `add_to_cart`, `begin_checkout`, `purchase` (มี `transaction_id`, value, currency THB, กันยิงซ้ำ) |
-| ซิงก์สต็อก JST | ดึงจำนวนพร้อมขายจาก JST ทุก 10 นาที (ตั้งค่าได้) + ปุ่มซิงก์/ทดสอบการเชื่อมต่อที่หลังบ้าน › ซิงก์สต็อก JST · หักออเดอร์เว็บที่ยังไม่จัดส่งกันขายเกิน · ตั้งคีย์ `JST_*` ใน Railway |
+| สต็อกจาก JST | **วิธีที่ 1 (ไม่ต้องมี License API):** export รายงานสต็อกจาก JST เป็น .xlsx/.csv แล้วอัปโหลดที่หลังบ้าน › สต็อก JST — ระบบหาคอลัมน์ SKU/จำนวนเอง (หรือพิมพ์ชื่อคอลัมน์), แสดงตัวอย่างก่อนกดยืนยัน · **วิธีที่ 2:** API อัตโนมัติทุก 10 นาที (ตั้งคีย์ `JST_*` ใน Railway) · ทั้งสองวิธีหักออเดอร์เว็บที่ยังไม่จัดส่งกันขายเกิน |
 | แจ้งเตือนทีม | ออเดอร์ใหม่ส่งเข้า LINE OA (Messaging API) ถ้าตั้งค่า token |
 
 ### หลังบ้าน `/admin`
@@ -95,6 +95,7 @@ lib/orders.ts       สร้างออเดอร์ (transaction + ตั�
 lib/policies.ts     เนื้อหานโยบาย (ร่าง)
 lib/jst.ts          เรียก JST open API (เซ็นคำขอ, ดึงสต็อก)
 lib/stock-sync.ts   ซิงก์สต็อก + ตั้งเวลาอัตโนมัติ (instrumentation.ts)
+lib/stock-file.ts   อ่านไฟล์สต็อก JST (.xlsx/.csv) หาคอลัมน์ SKU/จำนวนอัตโนมัติ
 lib/articles.ts     บทความ (เก็บใน DB) + ตัวแปลงข้อความ ## หัวข้อ / - รายการ
 lib/site.ts         ข้อมูลแบรนด์/บริษัท/ช่องทางติดต่อ
 data/product-master.csv   ข้อมูลสินค้าจากชีต (ไม่มีต้นทุน)

@@ -3,10 +3,11 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { checkPassword, endSession, isAdmin, startSession } from "@/lib/auth";
-import { getDb, importProducts, transaction } from "@/lib/db";
+import { getDb, getSettings, importProducts, transaction } from "@/lib/db";
 import { parseProductMaster } from "@/lib/catalog";
 import { updateOrder, type OrderStatus } from "@/lib/orders";
 import { jstSourceFromEnv, syncStock } from "@/lib/stock-sync";
+import { parseStockRows, readRows } from "@/lib/stock-file";
 import { jstCall, jstConfigFromEnv } from "@/lib/jst";
 import { deleteArticle as removeArticle, saveArticle as storeArticle } from "@/lib/articles";
 
@@ -199,4 +200,83 @@ export async function testJstConnection() {
   }
   getDb().prepare("INSERT INTO settings (key, value) VALUES ('jst_last_test', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(result.slice(0, 8000));
   redirect("/admin/stock-sync?tested=1");
+}
+
+const PENDING_KEY = "jst_pending_upload";
+const PENDING_TTL_MS = 30 * 60_000;
+
+function setSetting(key: string, value: string) {
+  getDb().prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(key, value);
+}
+
+/** ขั้นที่ 1: อ่านไฟล์สต็อกจาก JST แล้วแสดงตัวอย่างการเปลี่ยนแปลง (ยังไม่บันทึก) */
+export async function previewStockFile(formData: FormData) {
+  await guard();
+  const file = formData.get("file");
+  const back: (q: string) => never = (q) => {
+    revalidatePath("/admin/stock-sync");
+    redirect("/admin/stock-sync?" + q + "#upload");
+  };
+  if (!(file instanceof File) || file.size === 0) back("upload_error=" + encodeURIComponent("กรุณาเลือกไฟล์"));
+  if (file.size > 20 * 1024 * 1024) back("upload_error=" + encodeURIComponent("ไฟล์ใหญ่เกิน 20MB"));
+  const skuColumn = String(formData.get("sku_col") ?? "").trim();
+  const qtyColumn = String(formData.get("qty_col") ?? "").trim();
+  setSetting("jst_file_sku_col", skuColumn);
+  setSetting("jst_file_qty_col", qtyColumn);
+
+  let parsed: ReturnType<typeof parseStockRows>;
+  try {
+    parsed = parseStockRows(await readRows(new Uint8Array(await file.arrayBuffer()), file.name), {
+      skuColumn: skuColumn || undefined,
+      qtyColumn: qtyColumn || undefined,
+    });
+  } catch (e) {
+    back("upload_error=" + encodeURIComponent(e instanceof Error ? e.message : "อ่านไฟล์ไม่สำเร็จ"));
+  }
+  const preview = await syncStock({ name: "jst-file", fetch: async () => parsed.stock }, "upload", getDb(), { dryRun: true });
+  if (!preview.ok) back("upload_error=" + encodeURIComponent(preview.error ?? "คำนวณไม่สำเร็จ"));
+  const webSkus = new Set((getDb().prepare("SELECT sku FROM variants").all() as { sku: string }[]).map((r) => r.sku.toUpperCase()));
+  const notOnWeb = [...parsed.stock.keys()].filter((k) => !webSkus.has(k));
+  setSetting(
+    PENDING_KEY,
+    JSON.stringify({
+      at: Date.now(),
+      fileName: file.name,
+      skuHeader: parsed.skuHeader,
+      qtyHeader: parsed.qtyHeader,
+      dataRows: parsed.dataRows,
+      skipped: parsed.skipped,
+      matched: preview.checked,
+      missingOnFile: preview.missing.length,
+      notOnWeb: notOnWeb.length,
+      notOnWebSample: notOnWeb.slice(0, 30),
+      changes: preview.changes,
+      stock: [...parsed.stock.entries()],
+    }),
+  );
+  back("preview=1");
+}
+
+/** ขั้นที่ 2: ยืนยันบันทึกสต็อกจากไฟล์ที่ดูตัวอย่างไว้ */
+export async function confirmStockFile() {
+  await guard();
+  const back: (q: string) => never = (q) => {
+    revalidatePath("/admin/stock-sync");
+    redirect("/admin/stock-sync?" + q + "#upload");
+  };
+  const raw = getSettings().jst_pending_upload;
+  const pending = raw ? (JSON.parse(raw) as { at: number; stock: [string, number][] }) : null;
+  if (!pending || Date.now() - pending.at > PENDING_TTL_MS) back("upload_error=" + encodeURIComponent("ไม่พบไฟล์ที่รอยืนยัน หรือเกิน 30 นาทีแล้ว — กรุณาอัปโหลดใหม่"));
+  const r = await syncStock({ name: "jst-file", fetch: async () => new Map(pending!.stock) }, "upload");
+  setSetting(PENDING_KEY, "");
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/stock-sync");
+  back(r.ok ? "ok=" + encodeURIComponent(`อัปเดตสต็อกจากไฟล์แล้ว: ตรวจ ${r.checked} SKU · เปลี่ยน ${r.updated} รายการ`) : "upload_error=" + encodeURIComponent(r.error ?? "บันทึกไม่สำเร็จ"));
+}
+
+export async function cancelStockFile() {
+  await guard();
+  setSetting(PENDING_KEY, "");
+  revalidatePath("/admin/stock-sync");
+  redirect("/admin/stock-sync?cancelled=1#upload");
 }

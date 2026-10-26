@@ -20,16 +20,35 @@ export function jstSourceFromEnv(): StockSource | null {
  */
 export const RESERVING_STATUSES = ["pending_payment", "paid", "processing"];
 
-export type SyncResult = { ok: boolean; checked: number; updated: number; missing: string[]; error?: string; logId: number };
+export type StockChange = { sku: string; from: number; to: number };
+export type SyncResult = {
+  ok: boolean;
+  checked: number;
+  updated: number;
+  missing: string[];
+  changes: StockChange[];
+  error?: string;
+  logId: number;
+};
 
 let running = false;
 
-export async function syncStock(source: StockSource, trigger: "auto" | "manual", db: DatabaseSync = getDb()): Promise<SyncResult> {
-  if (running) return { ok: false, checked: 0, updated: 0, missing: [], error: "กำลังซิงก์อยู่แล้ว", logId: 0 };
+/**
+ * นำยอดสต็อกจากแหล่งภายนอก (JST API หรือไฟล์ export จาก JST) มาอัปเดตบนเว็บ
+ * dryRun = คำนวณให้ดูว่าจะเปลี่ยนอะไรบ้าง โดยยังไม่บันทึก
+ */
+export async function syncStock(
+  source: StockSource,
+  trigger: "auto" | "manual" | "upload",
+  db: DatabaseSync = getDb(),
+  opts: { dryRun?: boolean } = {},
+): Promise<SyncResult> {
+  const empty = { checked: 0, updated: 0, missing: [], changes: [] };
+  if (running) return { ok: false, ...empty, error: "กำลังซิงก์อยู่แล้ว", logId: 0 };
   running = true;
-  const logId = Number(
-    db.prepare("INSERT INTO stock_sync_log (source, trigger) VALUES (?, ?)").run(source.name, trigger).lastInsertRowid,
-  );
+  const logId = opts.dryRun
+    ? 0
+    : Number(db.prepare("INSERT INTO stock_sync_log (source, trigger) VALUES (?, ?)").run(source.name, trigger).lastInsertRowid);
   try {
     const variants = db.prepare("SELECT id, sku, stock FROM variants").all() as { id: number; sku: string; stock: number }[];
     const remote = await source.fetch(variants.map((v) => v.sku));
@@ -44,9 +63,9 @@ export async function syncStock(source: StockSource, trigger: "auto" | "manual",
     for (const r of rows) reserved.set(r.id, r.qty);
 
     const missing: string[] = [];
-    let updated = 0;
+    const changes: StockChange[] = [];
     const upd = db.prepare("UPDATE variants SET stock = ? WHERE id = ?");
-    transaction(db, () => {
+    const apply = () => {
       for (const v of variants) {
         const qty = remote.get(v.sku.toUpperCase());
         if (qty == null) {
@@ -55,20 +74,26 @@ export async function syncStock(source: StockSource, trigger: "auto" | "manual",
         }
         const next = Math.max(0, qty - (reserved.get(v.id) ?? 0));
         if (next !== v.stock) {
-          upd.run(next, v.id);
-          updated++;
+          if (!opts.dryRun) upd.run(next, v.id);
+          changes.push({ sku: v.sku, from: v.stock, to: next });
         }
       }
-    });
+    };
+    if (opts.dryRun) apply();
+    else transaction(db, apply);
     const checked = variants.length - missing.length;
-    db.prepare(
-      "UPDATE stock_sync_log SET finished_at = datetime('now'), ok = 1, checked = ?, updated = ?, missing = ? WHERE id = ?",
-    ).run(checked, updated, missing.join(","), logId);
-    return { ok: true, checked, updated, missing, logId };
+    if (!opts.dryRun) {
+      db.prepare(
+        "UPDATE stock_sync_log SET finished_at = datetime('now'), ok = 1, checked = ?, updated = ?, missing = ? WHERE id = ?",
+      ).run(checked, changes.length, missing.join(","), logId);
+    }
+    return { ok: true, checked, updated: changes.length, missing, changes, logId };
   } catch (e) {
     const error = e instanceof Error ? e.message : String(e);
-    db.prepare("UPDATE stock_sync_log SET finished_at = datetime('now'), ok = 0, error = ? WHERE id = ?").run(error.slice(0, 1000), logId);
-    return { ok: false, checked: 0, updated: 0, missing: [], error, logId };
+    if (!opts.dryRun) {
+      db.prepare("UPDATE stock_sync_log SET finished_at = datetime('now'), ok = 0, error = ? WHERE id = ?").run(error.slice(0, 1000), logId);
+    }
+    return { ok: false, ...empty, error, logId };
   } finally {
     running = false;
   }
