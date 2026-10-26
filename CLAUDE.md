@@ -37,7 +37,8 @@ Run `npm run lint && npm test && npx next build` before pushing.
 
 - Never trust client prices or stock. Totals must be computed by `lib/pricing.ts` from DB values.
 - Never import or expose the cost column ("ต้นทุน") from the product sheet.
-- Admin edits to product `status` and `featured` must survive CSV re-imports (`importProducts` only updates catalogue fields, price and stock).
+- Admin edits to product `status` and `featured` must survive CSV re-imports (`importProducts` only updates catalogue fields, price and stock). The admin import keeps existing variant stock unless "update stock" is ticked (`keepStock`), because stock now comes from JST.
+- Category/collection links live in `components/nav.ts` and must match sheet values; `tests/nav.test.ts` fails if a menu link would show no products.
 - UI copy is Thai. Prices are THB and shown VAT-inclusive.
 - Don't commit `.env` or `data/*.db`.
 - The header uses `backdrop-blur`, so any `fixed` overlay (drawer, modal) must be rendered outside `<header>`.

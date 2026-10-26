@@ -14,6 +14,7 @@ export function parseListQuery(sp: SP): ListQuery {
   const sort = (Array.isArray(sp.sort) ? sp.sort[0] : sp.sort) as SortKey | undefined;
   return {
     q: (Array.isArray(sp.q) ? sp.q[0] : sp.q)?.slice(0, 100),
+    title: (Array.isArray(sp.title) ? sp.title[0] : sp.title)?.slice(0, 40),
     category: list(sp.category),
     gender: list(sp.gender),
     collection: list(sp.collection),

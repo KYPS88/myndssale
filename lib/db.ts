@@ -208,8 +208,9 @@ export type ImportResult = { products: number; variants: number; created: number
 /**
  * Upsert สินค้าจากชีต: ข้อมูลสินค้า ราคา และสต็อกยึดตามชีต
  * ส่วนที่แอดมินตั้งในหลังบ้าน (สถานะเผยแพร่ / สินค้าแนะนำ) จะไม่ถูกเขียนทับ
+ * keepStock: variant ที่มีอยู่แล้วคงสต็อกเดิม (ใช้เมื่อสต็อกมาจาก JST) — variant ใหม่ใช้สต็อกจากชีต
  */
-export function importProducts(db: DatabaseSync, products: ImportedProduct[]): ImportResult {
+export function importProducts(db: DatabaseSync, products: ImportedProduct[], opts: { keepStock?: boolean } = {}): ImportResult {
   const res: ImportResult = { products: 0, variants: 0, created: 0, updated: 0 };
   const findProduct = db.prepare("SELECT id FROM products WHERE sku = ?");
   const insertProduct = db.prepare(`INSERT INTO products
@@ -223,7 +224,7 @@ export function importProducts(db: DatabaseSync, products: ImportedProduct[]): I
   const upsertVariant = db.prepare(`INSERT INTO variants (product_id, sku, color, size, price, compare_at, stock, image, barcode, weight)
     VALUES (?,?,?,?,?,?,?,?,?,?)
     ON CONFLICT(sku) DO UPDATE SET product_id=excluded.product_id, color=excluded.color, size=excluded.size,
-      price=excluded.price, compare_at=excluded.compare_at, stock=excluded.stock, image=excluded.image,
+      price=excluded.price, compare_at=excluded.compare_at, stock=CASE WHEN ? THEN stock ELSE excluded.stock END, image=excluded.image,
       barcode=excluded.barcode, weight=excluded.weight`);
 
   transaction(db, () => {
@@ -245,7 +246,7 @@ export function importProducts(db: DatabaseSync, products: ImportedProduct[]): I
       }
       res.products++;
       for (const v of p.variants) {
-        upsertVariant.run(id, v.sku, v.color, v.size, v.price, v.compareAt, v.stock, v.image, v.barcode, v.weight);
+        upsertVariant.run(id, v.sku, v.color, v.size, v.price, v.compareAt, v.stock, v.image, v.barcode, v.weight, opts.keepStock ? 1 : 0);
         res.variants++;
       }
     }

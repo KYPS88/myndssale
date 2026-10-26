@@ -152,6 +152,8 @@ export const SORTS: { key: SortKey; label: string }[] = [
 
 export type ListQuery = {
   q?: string;
+  /** หัวข้อหน้า (ใช้กับลิงก์เมนูที่กรองหลายค่า) */
+  title?: string;
   category?: string[];
   gender?: string[];
   collection?: string[];

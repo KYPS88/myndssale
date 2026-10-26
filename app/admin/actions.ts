@@ -134,8 +134,10 @@ export async function importCsv(formData: FormData) {
   if (file.size > 20 * 1024 * 1024) redirect("/admin/import?error=" + encodeURIComponent("ไฟล์ใหญ่เกิน 20MB"));
   let msg: string;
   try {
-    const r = importProducts(getDb(), parseProductMaster(await file.text()));
-    msg = `นำเข้าแล้ว ${r.products} สินค้า (ใหม่ ${r.created}, อัปเดต ${r.updated}) · ${r.variants} variant`;
+    const keepStock = formData.get("update_stock") !== "1";
+    const r = importProducts(getDb(), parseProductMaster(await file.text()), { keepStock });
+    msg = `นำเข้าแล้ว ${r.products} สินค้า (ใหม่ ${r.created}, อัปเดต ${r.updated}) · ${r.variants} variant` +
+      (keepStock ? " · คงจำนวนสต็อกเดิม" : " · อัปเดตสต็อกตามชีต");
   } catch (e) {
     redirect("/admin/import?error=" + encodeURIComponent(e instanceof Error ? e.message : "นำเข้าไม่สำเร็จ"));
   }
