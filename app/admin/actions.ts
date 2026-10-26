@@ -6,6 +6,8 @@ import { checkPassword, endSession, isAdmin, startSession } from "@/lib/auth";
 import { getDb, importProducts, transaction } from "@/lib/db";
 import { parseProductMaster } from "@/lib/catalog";
 import { updateOrder, type OrderStatus } from "@/lib/orders";
+import { jstSourceFromEnv, syncStock } from "@/lib/stock-sync";
+import { jstCall, jstConfigFromEnv } from "@/lib/jst";
 import { deleteArticle as removeArticle, saveArticle as storeArticle } from "@/lib/articles";
 
 async function guard() {
@@ -166,4 +168,35 @@ export async function deleteArticle(formData: FormData) {
   removeArticle(Number(formData.get("id")));
   revalidatePath("/blog");
   redirect("/admin/articles");
+}
+
+export async function runStockSync() {
+  await guard();
+  const source = jstSourceFromEnv();
+  if (!source) redirect("/admin/stock-sync?error=" + encodeURIComponent("ยังไม่ได้ตั้งค่า JST_APP_KEY / JST_APP_SECRET / JST_ACCESS_TOKEN ใน Railway"));
+  const r = await syncStock(source, "manual");
+  revalidatePath("/", "layout");
+  redirect(
+    "/admin/stock-sync?" +
+      (r.ok ? "ok=" + encodeURIComponent(`ซิงก์สำเร็จ: ตรวจ ${r.checked} SKU · อัปเดต ${r.updated} · ไม่พบใน JST ${r.missing.length}`) : "error=" + encodeURIComponent(r.error ?? "ซิงก์ไม่สำเร็จ")),
+  );
+}
+
+/** เรียก API สต็อกด้วย SKU ตัวอย่าง 3 ตัว แล้วเก็บคำตอบดิบไว้ดู (ใช้ตรวจว่าคีย์/URL/รูปแบบข้อมูลถูกต้อง) */
+export async function testJstConnection() {
+  await guard();
+  const cfg = jstConfigFromEnv();
+  if (!cfg) redirect("/admin/stock-sync?error=" + encodeURIComponent("ยังไม่ได้ตั้งค่า JST_APP_KEY / JST_APP_SECRET / JST_ACCESS_TOKEN ใน Railway"));
+  const skus = (getDb().prepare("SELECT sku FROM variants WHERE stock > 0 LIMIT 3").all() as { sku: string }[]).map((r) => r.sku);
+  let result: string;
+  try {
+    const biz: Record<string, unknown> = { page_index: 1, page_size: 10, sku_ids: skus.join(",") };
+    if (cfg.wmsCoId != null) biz.wms_co_id = cfg.wmsCoId;
+    const json = await jstCall(cfg, cfg.inventoryPath, biz);
+    result = JSON.stringify({ ok: true, at: new Date().toISOString(), skus, response: json }, null, 2);
+  } catch (e) {
+    result = JSON.stringify({ ok: false, at: new Date().toISOString(), skus, error: e instanceof Error ? e.message : String(e) }, null, 2);
+  }
+  getDb().prepare("INSERT INTO settings (key, value) VALUES ('jst_last_test', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").run(result.slice(0, 8000));
+  redirect("/admin/stock-sync?tested=1");
 }
