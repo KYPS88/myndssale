@@ -113,7 +113,7 @@ export async function deleteCoupon(formData: FormData) {
   redirect("/admin/coupons");
 }
 
-const SETTING_KEYS = ["shipping_flat", "free_shipping_min", "cod_enabled", "cod_fee", "card_enabled", "bank_name", "bank_account_name", "bank_account_no", "promptpay_id", "shipping_note", "announcement", "brand_story"];
+const SETTING_KEYS = ["shipping_flat", "free_shipping_min", "cod_enabled", "cod_fee", "card_enabled", "bank_name", "bank_account_name", "bank_account_no", "promptpay_id", "shipping_note", "announcement", "brand_story", "web_order_enabled"];
 
 export async function saveSettings(formData: FormData) {
   await guard();

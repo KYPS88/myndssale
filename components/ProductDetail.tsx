@@ -9,13 +9,14 @@ import { WishlistButton } from "./Wishlist";
 import { track } from "./analytics";
 import { SOLD_OUT_IMG, SoldOutOverlay } from "./SoldOut";
 import { Img } from "@/components/Img";
+import { sendEvent } from "./SiteTracker";
 
 type V = { id: number; sku: string; color: string; size: string; price: number; compare_at: number | null; stock: number; image: string | null };
 type P = { slug: string; sku: string; name: string; images: string[]; variants: V[]; sizes: string[] };
 
 const LOW_STOCK = 5;
 
-export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
+export function ProductDetail({ p, lineUrl, lineQr, webOrder = true }: { p: P; lineUrl: string; lineQr?: string; webOrder?: boolean }) {
   const { add } = useCart();
   const colors = useMemo(() => [...new Set(p.variants.map((v) => v.color))], [p.variants]);
   const defaultColor = useMemo(() => {
@@ -28,6 +29,7 @@ export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
   const [qty, setQty] = useState(1);
   const [imgIndex, setImgIndex] = useState(0);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const forColor = p.variants.filter((v) => v.color === color);
   const variant = size ? forColor.find((v) => v.size === size) ?? null : null;
@@ -58,6 +60,25 @@ export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
       { variantId: variant.id, sku: variant.sku, slug: p.slug, name: p.name, color: variant.color, size: variant.size, price: variant.price, image: variant.image ?? gallery[0] ?? null, stock: variant.stock },
       qty,
     );
+  };
+
+  // สั่งซื้อทาง LINE: คัดลอกรายละเอียดให้ลูกค้าวางในแชท แล้วเปิด LINE
+  const orderText = () =>
+    [
+      "สนใจสั่งซื้อค่ะ/ครับ",
+      p.name,
+      `สี: ${color} · ไซซ์: ${size ?? "ยังไม่เลือก"} · จำนวน: ${qty}`,
+      `รหัส: ${variant?.sku ?? p.sku}`,
+      typeof location !== "undefined" ? location.href : "",
+    ].filter(Boolean).join("\n");
+  const onLineOrder = (e: React.MouseEvent) => {
+    sendEvent("line_order", "product");
+    // คัดลอกก่อน แล้วค่อยเปิด LINE — ถ้าแท็บใหม่เปิดก่อน หน้าเว็บจะเสีย focus และคัดลอกไม่ได้
+    if (copyNow(orderText())) {
+      setCopied(true);
+      e.preventDefault();
+      window.open(lineUrl, "_blank", "noopener");
+    }
   };
 
   const main = gallery[imgIndex] ?? "/placeholder.svg";
@@ -142,14 +163,39 @@ export function ProductDetail({ p, lineUrl }: { p: P; lineUrl: string }) {
 
         <div className="flex items-center gap-3">
           <QtyStepper value={qty} max={variant?.stock ?? 1} onChange={setQty} />
-          <button className="btn-primary flex-1 py-3 text-base" onClick={onAdd} disabled={colorSoldOut || (!!variant && variant.stock <= 0)}>
-            {colorSoldOut ? "สินค้าหมดสต็อก" : "เพิ่มลงตะกร้า"}
-          </button>
+          {webOrder || colorSoldOut ? (
+            <button className="btn-primary flex-1 py-3 text-base" onClick={onAdd} disabled={colorSoldOut || (!!variant && variant.stock <= 0)}>
+              {colorSoldOut ? "สินค้าหมดสต็อก" : "เพิ่มลงตะกร้า"}
+            </button>
+          ) : (
+            <a href={lineUrl} target="_blank" rel="noopener" data-line="order" onClick={onLineOrder}
+              className="btn flex-1 bg-[#06c755] py-3 text-base text-white hover:opacity-90">
+              สั่งซื้อทาง LINE
+            </a>
+          )}
         </div>
+        {!webOrder && (
+          <p className="-mt-3 text-sm text-muted" role="status">
+            {copied
+              ? "✓ คัดลอกรายละเอียดสินค้าแล้ว — วางในแชท LINE เพื่อสั่งซื้อได้เลย"
+              : "เลือกสี ไซซ์ และจำนวน แล้วกดสั่งซื้อ แอดมินจะยืนยันยอดและค่าส่งให้ในแชท"}
+          </p>
+        )}
+        {!webOrder && lineQr && (
+          <div className="hidden items-center gap-4 rounded-xl border border-line p-4 md:flex">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={lineQr} alt="QR Code แอดไลน์ Mynds" width={112} height={112} className="h-28 w-28" />
+            <p className="text-sm">
+              <b>สแกนเพื่อแอดไลน์</b>
+              <br />
+              สั่งซื้อหรือสอบถามแอดมินได้ทันที
+            </p>
+          </div>
+        )}
 
         {forColor.some((v) => v.stock <= 0) && <RestockForm variants={forColor.filter((v) => v.stock <= 0)} />}
 
-        <a href={lineUrl} target="_blank" rel="noopener" className="block rounded-xl bg-soft p-4 text-sm">
+        <a href={lineUrl} data-line="product-chat" target="_blank" rel="noopener" className="block rounded-xl bg-soft p-4 text-sm">
           💬 สอบถามไซซ์หรือสั่งซื้อจำนวนมาก ทักแอดมินทาง <b className="text-[#06a648]">LINE</b>
         </a>
       </div>
@@ -180,4 +226,21 @@ function RestockForm({ variants }: { variants: V[] }) {
       {state === "error" && <p className="text-xs text-sale">ไม่สำเร็จ กรุณาตรวจสอบข้อมูล</p>}
     </form>
   );
+}
+
+function copyNow(text: string): boolean {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
 }

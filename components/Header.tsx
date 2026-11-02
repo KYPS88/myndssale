@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "./CartProvider";
-import { BagIcon, CloseIcon, HeartIcon, MenuIcon, SearchIcon } from "./icons";
+import { BagIcon, CloseIcon, HeartIcon, LineIcon, MenuIcon, SearchIcon } from "./icons";
+import { site } from "@/lib/site";
 import { NAV, NAV_BRAND } from "./nav";
 import { track } from "./analytics";
 import { Img } from "@/components/Img";
@@ -83,7 +84,7 @@ function SearchBox({ onDone, autoFocus }: { onDone?: () => void; autoFocus?: boo
   );
 }
 
-export function Header({ announcement }: { announcement?: string }) {
+export function Header({ announcement, webOrder = true }: { announcement?: string; webOrder?: boolean }) {
   const { count, setDrawerOpen } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -126,14 +127,21 @@ export function Header({ announcement }: { announcement?: string }) {
           <Link href="/wishlist" className="p-2" aria-label="สินค้าที่ชอบ">
             <HeartIcon />
           </Link>
-          <button className="relative p-2" onClick={() => setDrawerOpen(true)} aria-label={`ตะกร้าสินค้า ${count} ชิ้น`}>
-            <BagIcon />
-            {count > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-ice px-1 text-[11px] font-semibold text-white">
-                {count}
-              </span>
-            )}
-          </button>
+          {webOrder ? (
+            <button className="relative p-2" onClick={() => setDrawerOpen(true)} aria-label={`ตะกร้าสินค้า ${count} ชิ้น`}>
+              <BagIcon />
+              {count > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-ice px-1 text-[11px] font-semibold text-white">
+                  {count}
+                </span>
+              )}
+            </button>
+          ) : (
+            <a href={site.contact.lineUrl} target="_blank" rel="noopener" data-line="header"
+              className="ml-1 inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#06c755] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90">
+              <LineIcon className="h-4 w-4" /> <span className="hidden 2xl:inline">สั่งซื้อทาง</span><span className="lg:max-xl:sr-only">LINE</span>
+            </a>
+          )}
         </div>
       </div>
       {searchOpen && (

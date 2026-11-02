@@ -10,7 +10,7 @@ export function Footer() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/logo-tagline.png" alt="Mynds — Made for everyday" width={502} height={192} className="h-14 w-auto" />
           <p className="text-sm text-muted">{site.positioning}</p>
-          <a href={site.contact.lineUrl} target="_blank" rel="noopener" className="btn inline-flex bg-[#06c755] text-white hover:opacity-90">
+          <a href={site.contact.lineUrl} data-line="footer" target="_blank" rel="noopener" className="btn inline-flex bg-[#06c755] text-white hover:opacity-90">
             <LineIcon /> LINE {site.contact.lineId}
           </a>
         </div>

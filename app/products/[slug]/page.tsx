@@ -74,6 +74,8 @@ export default async function ProductPage({ params }: Params) {
       <ProductDetail
         p={{ slug: p.slug, sku: p.sku, name: p.name, images: p.images, sizes, variants: vs.map(({ id, sku, color, size, price, compare_at, stock, image }) => ({ id, sku, color, size, price, compare_at, stock, image })) }}
         lineUrl={site.contact.lineUrl}
+        lineQr={site.contact.lineQr}
+        webOrder={getSettings().web_order_enabled === "1"}
       />
 
       <section className="mt-12 grid gap-8 md:grid-cols-2 lg:gap-14">

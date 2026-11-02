@@ -17,8 +17,10 @@ export const site = {
       "เลขที่ 359/136 มบ.โกลเด้น นีโอ 2 บางแค ซอยกาญจนาภิเษก 005/1 แขวงหลักสอง เขตบางแค กรุงเทพฯ 10160",
   },
   contact: {
-    lineId: "@693ppazy",
-    lineUrl: "https://line.me/R/ti/p/@693ppazy",
+    lineId: "@mynds.brand",
+    // ลิงก์แอดเพื่อนของ LINE OA (lin.ee นับยอดใน LINE OA Manager ได้) · QR อยู่ที่ /brand/line-qr.png
+    lineUrl: "https://lin.ee/5tuCkXQF",
+    lineQr: "/brand/line-qr.png",
     hours: "ทุกวัน 09:00–18:00 น.",
   },
   currency: "THB",

@@ -5,6 +5,7 @@ import { logout } from "../actions";
 
 const NAV = [
   { href: "/admin", label: "ภาพรวม" },
+  { href: "/admin/analytics", label: "สถิติ" },
   { href: "/admin/orders", label: "คำสั่งซื้อ" },
   { href: "/admin/products", label: "สินค้า / สต็อก" },
   { href: "/admin/stock-sync", label: "สต็อก JST" },

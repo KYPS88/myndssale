@@ -137,6 +137,17 @@ CREATE TABLE IF NOT EXISTS stock_sync_log (
   missing TEXT,
   error TEXT
 );
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id INTEGER PRIMARY KEY,
+  day TEXT NOT NULL,
+  ts TEXT NOT NULL DEFAULT (datetime('now')),
+  type TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  path TEXT,
+  slug TEXT,
+  place TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_analytics_day ON analytics_events(day, type);
 CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
@@ -157,6 +168,8 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   announcement: "ส่งฟรีเมื่อช้อปครบ ฿990 · เปลี่ยนไซซ์ได้ภายใน 7 วัน",
   // ประวัติแบรนด์ (หน้า /about) — แก้ได้ในหลังบ้าน › ตั้งค่าร้าน; เว้นว่างจะใช้ข้อความตั้งต้น
   brand_story: "",
+  // สั่งซื้อผ่านตะกร้าบนเว็บ: "0" = ปิด ให้ลูกค้าสั่งทาง LINE แทน (ตั้งในหลังบ้าน › ตั้งค่าร้าน)
+  web_order_enabled: "0",
 };
 
 export type DB = DatabaseSync;
