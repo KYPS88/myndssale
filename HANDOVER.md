@@ -20,7 +20,7 @@
 | 5 | โดเมน | ให้สิทธิ์ DNS ที่ผู้ให้บริการโดเมน (หรือโอนโดเมน) เพื่อชี้มาที่ Railway › Custom Domain | ☐ |
 | 6 | Google Sheet “Website Brief - Mynds” | ให้สิทธิ์แก้ไข (ใช้เป็นต้นทางข้อมูลสินค้า) | ☐ |
 | 7 | โฟลเดอร์ Drive รูป/โลโก้ (เจ้าของ boy.vwearing@gmail.com) | แชร์ให้ผู้รับโดยระบุอีเมล | ☐ |
-| 8 | บัญชีภายนอก | LINE OA @693ppazy (Messaging API), GA4, Meta Pixel, ระบบตัดบัตร (“พี่บอย”) — เพิ่มผู้รับเป็นผู้ดูแล | ☐ |
+| 8 | บัญชีภายนอก | LINE OA @mynds.brand (Basic ID @693ppazy, Messaging API), GA4, Meta Pixel, ระบบตัดบัตร (“พี่บอย”) — เพิ่มผู้รับเป็นผู้ดูแล | ☐ |
 
 ## ตัวแปรที่ต้องตั้งใน Railway
 
@@ -70,4 +70,4 @@
 | ผู้ส่งมอบ | _กรอก_ |
 | ผู้รับช่วงดูแล | _กรอก_ |
 | เจ้าของโฟลเดอร์รูป/โลโก้ | boy.vwearing@gmail.com |
-| LINE OA ร้าน | @693ppazy |
+| LINE OA ร้าน | @mynds.brand (ลิงก์แอด https://lin.ee/5tuCkXQF) |
