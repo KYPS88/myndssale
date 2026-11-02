@@ -29,7 +29,7 @@ export default function FaqPage() {
       </div>
       <h2 id="contact" className="mt-14 text-2xl font-semibold">ติดต่อเรา</h2>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <a href={site.contact.lineUrl} target="_blank" rel="noopener" className="card flex items-center gap-3 p-5 hover:border-[#06c755]">
+        <a href={site.contact.lineUrl} data-line="faq" target="_blank" rel="noopener" className="card flex items-center gap-3 p-5 hover:border-[#06c755]">
           <span className="grid h-11 w-11 place-items-center rounded-full bg-[#06c755] text-white"><LineIcon /></span>
           <span><span className="block font-medium">LINE Official</span><span className="text-sm text-muted">{site.contact.lineId} · {site.contact.hours}</span></span>
         </a>

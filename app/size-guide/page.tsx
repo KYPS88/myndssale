@@ -20,7 +20,7 @@ export default function SizeGuide() {
           {ROWS.map(([s, c, l]) => <tr key={s} className="border-t border-line"><td className="p-3 font-medium">{s}</td><td className="p-3">{c}</td><td className="p-3">{l}</td></tr>)}
         </tbody>
       </table>
-      <p className="mt-6 text-sm">ไม่แน่ใจไซซ์? ส่งส่วนสูง/น้ำหนักให้แอดมินช่วยเลือกทาง LINE <a href={site.contact.lineUrl} className="font-semibold text-[#06a648] underline">{site.contact.lineId}</a></p>
+      <p className="mt-6 text-sm">ไม่แน่ใจไซซ์? ส่งส่วนสูง/น้ำหนักให้แอดมินช่วยเลือกทาง LINE <a href={site.contact.lineUrl} data-line="size-guide" className="font-semibold text-[#06a648] underline">{site.contact.lineId}</a></p>
     </div>
   );
 }

@@ -18,7 +18,9 @@ export const site = {
   },
   contact: {
     lineId: "@693ppazy",
-    lineUrl: "https://line.me/R/ti/p/@693ppazy",
+    // ลิงก์แอดเพื่อนของ LINE OA (lin.ee นับยอดใน LINE OA Manager ได้) · QR อยู่ที่ /brand/line-qr.png
+    lineUrl: "https://lin.ee/5tuCkXQF",
+    lineQr: "/brand/line-qr.png",
     hours: "ทุกวัน 09:00–18:00 น.",
   },
   currency: "THB",

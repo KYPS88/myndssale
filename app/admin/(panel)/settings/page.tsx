@@ -11,6 +11,13 @@ export default async function Settings({ searchParams }: { searchParams: Promise
     <form action={saveSettings} className="space-y-6">
       <div className="flex items-center"><h1 className="text-2xl font-semibold">ตั้งค่าร้าน</h1><button className="btn-primary ml-auto">บันทึก</button></div>
       {saved && <p className="rounded-lg bg-ice-light p-3 text-sm text-ice-dark">บันทึกแล้ว</p>}
+      <div className="card space-y-2 p-6">
+        <h2 className="font-semibold">วิธีสั่งซื้อ</h2>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" name="web_order_enabled" defaultChecked={s.web_order_enabled === "1"} className="mt-1" />
+          <span>เปิดสั่งซื้อผ่าน<b>ตะกร้าบนเว็บ</b> <span className="text-muted">— ถ้าไม่ติ๊ก (ค่าปัจจุบัน) ลูกค้าจะเห็นปุ่ม “สั่งซื้อทาง LINE” แทน ตะกร้าและหน้าชำระเงินถูกปิด</span></span>
+        </label>
+      </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card space-y-4 p-6">
           <h2 className="font-semibold">การจัดส่ง</h2>

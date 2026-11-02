@@ -107,7 +107,7 @@ export default function Home() {
             <h2 className="text-2xl font-semibold">มีคำถามเรื่องไซซ์หรือสินค้า?</h2>
             <p className="mt-1 text-white/70">ทักแอดมินทาง LINE {site.contact.lineId} ตอบไว {site.contact.hours}</p>
           </div>
-          <a href={site.contact.lineUrl} target="_blank" rel="noopener" className="btn bg-[#06c755] px-7 py-3 text-white">แชทกับเรา</a>
+          <a href={site.contact.lineUrl} data-line="home" target="_blank" rel="noopener" className="btn bg-[#06c755] px-7 py-3 text-white">แชทกับเรา</a>
         </div>
       </section>
     </>

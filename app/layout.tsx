@@ -7,6 +7,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Tracking } from "@/components/Tracking";
+import { SiteTracker } from "@/components/SiteTracker";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -26,6 +27,7 @@ export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = getSettings();
+  const webOrder = settings.web_order_enabled === "1";
   return (
     <html lang="th">
       <head>
@@ -38,12 +40,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen font-sans">
         <CartProvider>
-          <Header announcement={settings.announcement} />
+          <Header announcement={settings.announcement} webOrder={webOrder} />
           <main>{children}</main>
           <Footer />
-          <CartDrawer freeShippingMin={Number(settings.free_shipping_min) || 0} />
+          {webOrder && <CartDrawer freeShippingMin={Number(settings.free_shipping_min) || 0} />}
         </CartProvider>
         <Tracking />
+        <SiteTracker />
       </body>
     </html>
   );

@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 import { CheckoutError, createOrder, validateCheckout } from "@/lib/orders";
 import { orderToken } from "@/lib/order-token";
 import { notifyNewOrder } from "@/lib/notify";
+import { getSettings } from "@/lib/db";
+import { site } from "@/lib/site";
 
 export async function POST(req: Request) {
+  if (getSettings().web_order_enabled !== "1") {
+    return NextResponse.json({ error: `ตอนนี้รับคำสั่งซื้อทาง LINE ${site.contact.lineId} เท่านั้น` }, { status: 403 });
+  }
   try {
     const input = validateCheckout(await req.json().catch(() => null));
     const order = createOrder(input);

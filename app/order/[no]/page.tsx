@@ -67,7 +67,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
           ) : null}
           <p className="text-sm">
             หลังโอนแล้ว กรุณาส่งสลิปพร้อมหมายเลขคำสั่งซื้อ <b>{o.order_no}</b> ทาง LINE{" "}
-            <a href={site.contact.lineUrl} target="_blank" rel="noopener" className="font-semibold text-[#06a648] underline">{site.contact.lineId}</a>
+            <a href={site.contact.lineUrl} data-line="order-page" target="_blank" rel="noopener" className="font-semibold text-[#06a648] underline">{site.contact.lineId}</a>
           </p>
         </section>
       )}
